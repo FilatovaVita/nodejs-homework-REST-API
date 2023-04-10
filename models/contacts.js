@@ -40,10 +40,10 @@ async function updateContact(id, body) {
   if (idx === -1) {
     return null;
   }
-  const updContact = { ...contacts[idx], ...body };
-  contacts.splice(idx, 1, updContact);
+  const newContact = { ...contacts[idx], ...body };
+  contacts.splice(idx, 1, newContact);
   await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf-8");
-  return updContact;
+  return newContact;
 }
 
 module.exports = {
