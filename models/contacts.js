@@ -28,21 +28,22 @@ async function removeContact(id) {
 
 async function addContact(name, email, phone) {
   const contacts = await getListContacts();
-  const newContact = { id: nanoid(), name, email, phone };
+  const newContact = { id: nanoid(21), name, email, phone };
   contacts.push(newContact);
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf-8");
   return newContact;
 }
 
 async function updateContact(id, body) {
   const contacts = await getListContacts();
-  const index = contacts.findIndex((contact) => contact.id === id);
-  if (index === -1) {
+  const idx = contacts.findIndex((contact) => contact.id === id);
+  if (idx === -1) {
     return null;
   }
-  contacts[index] = { id, ...body };
-  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2));
-  return contacts[index];
+  const newContact = { ...contacts[idx], ...body };
+  contacts.splice(idx, 1, newContact);
+  await fs.writeFile(contactsPath, JSON.stringify(contacts, null, 2), "utf-8");
+  return newContact;
 }
 
 module.exports = {

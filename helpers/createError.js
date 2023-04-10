@@ -1,11 +1,4 @@
-const messages = {
-  400: "missing fields",
-  401: "Unauthorized",
-  403: "Forbidden",
-  404: "Not found",
-  409: "Conflict",
-};
-const createError = (status, message = messages[status]) => {
+const createError = (status, message) => {
   const error = new Error(message);
   error.status = status;
   return error;
