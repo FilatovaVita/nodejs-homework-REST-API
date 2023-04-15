@@ -1,8 +1,8 @@
-const contactOperations = require("../models/contacts");
+const { Contact } = require("../models/contact");
 
 const { ctrlWrapper, createError } = require("../helpers");
 const getAllContacts = async (req, res) => {
-  const result = await contactOperations.getListContacts();
+  const result = await Contact.find({});
   res.json({
     status: "success",
     code: 200,
@@ -13,7 +13,7 @@ const getAllContacts = async (req, res) => {
 };
 const getById = async (req, res) => {
   const { id } = req.params;
-  const result = await contactOperations.getContactById(id);
+  const result = await Contact.findById(id);
 
   if (!result) {
     throw createError(404, "Not found");
@@ -28,7 +28,7 @@ const getById = async (req, res) => {
   });
 };
 const addNewContact = async (req, res) => {
-  const result = await contactOperations.addContact(req.body);
+  const result = await Contact.create(req.body);
 
   res.status(201).json({
     status: "success",
@@ -40,7 +40,7 @@ const addNewContact = async (req, res) => {
 };
 const updateContactById = async (req, res) => {
   const { id } = req.params;
-  const result = await contactOperations.updateContact(id, req.body);
+  const result = await Contact.findByIdAndUpdate(id, req.body);
 
   if (!result) {
     throw createError(404, "Not found");
@@ -57,7 +57,7 @@ const updateContactById = async (req, res) => {
 };
 const removeContactById = async (req, res) => {
   const { id } = req.params;
-  const result = await contactOperations.removeContact(id);
+  const result = await Contact.findByIdAndDelete(id);
   if (!result) {
     throw createError(404, "Not found");
   }
@@ -70,10 +70,33 @@ const removeContactById = async (req, res) => {
     },
   });
 };
+
+const updateStatus = async (req, res) => {
+  const { id } = req.params;
+  const { favorite } = req.body;
+  const result = await Contact.findByIdAndUpdate(
+    id,
+    { favorite },
+    { new: true }
+  );
+  if (!result) {
+    throw createError(404, "Not found");
+  }
+  res.json({
+    status: "success",
+    code: 200,
+    message: `updated status of contact ${result.name} with id:${id}`,
+    data: {
+      result,
+    },
+  });
+};
+
 module.exports = {
   getAllContacts: ctrlWrapper(getAllContacts),
   getById: ctrlWrapper(getById),
   addNewContact: ctrlWrapper(addNewContact),
   updateContactById: ctrlWrapper(updateContactById),
   removeContactById: ctrlWrapper(removeContactById),
+  updateStatus: ctrlWrapper(updateStatus),
 };
