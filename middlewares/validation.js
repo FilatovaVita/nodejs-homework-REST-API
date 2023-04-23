@@ -1,6 +1,6 @@
 const { createError } = require("../helpers");
 
-const validateContact = (schema) => {
+const validateData = (schema) => {
   return (req, res, next) => {
     const { error } = schema.validate(req.body);
     if (error) {
@@ -10,4 +10,4 @@ const validateContact = (schema) => {
   };
 };
 
-module.exports = validateContact;
+module.exports = { validateData };
