@@ -15,4 +15,26 @@ const updateSchema = Joi.object({
 const updateStatusSchema = Joi.object({
   favorite: Joi.boolean().required(),
 });
-module.exports = { addSchema, updateSchema, updateStatusSchema };
+
+const registerSchema = Joi.object({
+  name: Joi.string().min(1),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+});
+
+const loginSchema = Joi.object({
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+});
+
+const updateSubscriptionSchema = Joi.object({
+  subscription: Joi.string().valid("starter", "pro", "business").required(),
+});
+module.exports = {
+  addSchema,
+  updateSchema,
+  updateStatusSchema,
+  registerSchema,
+  loginSchema,
+  updateSubscriptionSchema,
+};
