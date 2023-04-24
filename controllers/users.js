@@ -17,8 +17,10 @@ const userSignup = async (req, res) => {
   }
   const newUser = await User.create({ ...req.body, password: hashPassword });
   res.status(201).json({
-    email: newUser.email,
-    name: newUser.name,
+    user: {
+      email: newUser.email,
+      subscription: newUser.subscription,
+    },
   });
 };
 const userLogin = async (req, res) => {
@@ -35,22 +37,17 @@ const userLogin = async (req, res) => {
     id: user._id,
   };
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "15m" });
-  user.token = token;
-  await User.findByIdAndUpdate(user._id, user);
+  await User.findByIdAndUpdate(user._id, { token });
   res.status(200).json({
-    token: user.token,
-    user: {
-      email: user.email,
-      subscription: user.subscription,
-    },
+    token,
+    email: user.email,
+    subscription: user.subscription,
   });
 };
 
 const userLogout = async (req, res) => {
   const { user } = req;
-  user.token = null;
-  await User.findByIdAndUpdate(user._id, user);
-
+  await User.findByIdAndUpdate(user._id, { token: null });
   res.status(204).json({});
 };
 
@@ -67,16 +64,18 @@ const userCurrent = async (req, res) => {
   return res.status(401).json({ message: "Not authorized" });
 };
 
-const getAllUsers = async (req, res) => {
-  const users = await User.find({});
-  return res.status(200).json({
-    message: users,
+const updateUsers = async (req, res) => {
+  const { _id } = req.user;
+  const { subscription } = req.body;
+  await User.findByIdAndUpdate(_id, { subscription });
+  res.json({
+    message: `Subscription level change to <${subscription}>`,
   });
 };
 
 module.exports = {
   userSignup: ctrlWrapper(userSignup),
-  getAllUsers: ctrlWrapper(getAllUsers),
+  updateUsers: ctrlWrapper(updateUsers),
   userLogin: ctrlWrapper(userLogin),
   userLogout: ctrlWrapper(userLogout),
   userCurrent: ctrlWrapper(userCurrent),
