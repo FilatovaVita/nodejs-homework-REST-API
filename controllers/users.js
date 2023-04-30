@@ -1,21 +1,32 @@
-const { User } = require("../models/user");
-const { ctrlWrapper, createError } = require("../helpers");
+const gravatar = require("gravatar");
+const path = require("path");
+const fs = require("fs").promises;
+const Jimp = require("jimp");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { User } = require("../models/user");
+const { ctrlWrapper, createError } = require("../helpers");
 const dotenv = require("dotenv");
 dotenv.config();
 
 const { SECRET_KEY } = process.env;
 
+const avatarsPath = path.join(__dirname, "../", "public", "avatars");
+
 const userSignup = async (req, res) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
   const hashPassword = await bcrypt.hash(password, 10);
+  const avatarURL = gravatar.url(email);
 
   if (user) {
     throw createError(409, "Email in use");
   }
-  const newUser = await User.create({ ...req.body, password: hashPassword });
+  const newUser = await User.create({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
   res.status(201).json({
     user: {
       email: newUser.email,
@@ -73,10 +84,29 @@ const updateUsers = async (req, res) => {
   });
 };
 
+const userAvatar = async (req, res) => {
+  const { path: tempUpload, originalname } = req.file;
+  const { _id } = req.user;
+  const image = await Jimp.read(tempUpload);
+  await image.resize(250, 250);
+  await image.writeAsync(tempUpload);
+  const [extention] = originalname.split(".").reverse();
+  const avatarName = `${_id}.${extention}`;
+  const newPath = path.join(avatarsPath, avatarName);
+  await fs.rename(tempUpload, newPath);
+  const avatarURL = path.join("avatars", avatarName);
+  await User.findByIdAndUpdate(_id, { avatarURL });
+
+  res.status(201).json({
+    avatarURL,
+  });
+};
+
 module.exports = {
   userSignup: ctrlWrapper(userSignup),
   updateUsers: ctrlWrapper(updateUsers),
   userLogin: ctrlWrapper(userLogin),
   userLogout: ctrlWrapper(userLogout),
   userCurrent: ctrlWrapper(userCurrent),
+  userAvatar: ctrlWrapper(userAvatar),
 };
