@@ -28,6 +28,4 @@ const auth = async (req, _, next) => {
   }
 };
 
-module.exports = {
-  auth,
-};
+module.exports = auth;
