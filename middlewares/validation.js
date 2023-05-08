@@ -10,4 +10,4 @@ const validateData = (schema) => {
   };
 };
 
-module.exports = { validateData };
+module.exports = validateData;
